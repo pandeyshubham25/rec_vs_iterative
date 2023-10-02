@@ -1,15 +1,22 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 )
 
 const (
-	depth        = 10
-	maxVariables = 50000
-	step         = 2000
+	num_observations = 10
+)
+
+var (
+	depth        int
+	maxVariables int
+	step         int
+	fileName     string
 )
 
 func recursiveTask(variables_count int, iterations int) {
@@ -44,22 +51,38 @@ func measureTime(executionFunc func(int, int), variables_count int, depth int) t
 }
 
 func main() {
-	rand.Seed(time.Now().UnixNano())
+	flag.IntVar(&depth, "depth", 10, "Depth value")
+	flag.IntVar(&maxVariables, "maxVariables", 100000, "Max variables value")
+	flag.IntVar(&step, "step", 5000, "Step value")
+	flag.StringVar(&fileName, "fileName", "data.txt", "File Name")
+	flag.Parse()
 
+	rand.Seed(time.Now().UnixNano())
+	file, err := os.Create(fileName)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+	defer file.Close() // Close the file when we're done
 	for variables_count := 1; variables_count < maxVariables; variables_count += step {
 		recursiveTotalTime := 0.0
 		iterativeTotalTime := 0.0
-		for j := 0; j < 5; j++ {
+		for j := 0; j < num_observations; j++ {
 			recursiveTime := measureTime(recursiveTask, variables_count, depth).Seconds()
 			iterativeTime := measureTime(iterativeTask, variables_count, depth).Seconds()
 			recursiveTotalTime += recursiveTime
 			iterativeTotalTime += iterativeTime
 
 		}
-		recursiveAvgTime := recursiveTotalTime / float64(5)
-		iterativeAvgTime := iterativeTotalTime / float64(5)
+		recursiveAvgTime := recursiveTotalTime / float64(num_observations)
+		iterativeAvgTime := iterativeTotalTime / float64(num_observations)
 
-		fmt.Printf("Variables: %d, Recursive Avg Time: %f seconds, Iterative Avg Time: %f seconds\n", variables_count, recursiveAvgTime, iterativeAvgTime)
+		formattedString := fmt.Sprintf("Variables: %d, Recursive Avg Time: %f seconds, Iterative Avg Time: %f seconds\n", variables_count, recursiveAvgTime, iterativeAvgTime)
+		_, err = fmt.Fprint(file, formattedString)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
 	}
 
 }

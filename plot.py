@@ -1,8 +1,14 @@
 import re
 import matplotlib.pyplot as plt
+import sys
 
+if len(sys.argv) < 2:
+    print("Usage: python script.py <filename>")
+    sys.exit(1)
+
+file_name = sys.argv[1]
 # Read data from the text file
-with open('data.txt', 'r') as file:
+with open(file_name, 'r') as file:
     lines = file.readlines()
 
 # Extract variables and times from each line
@@ -23,7 +29,7 @@ plt.plot(variables, recursive_times, label='Recursive')
 plt.plot(variables, iterative_times, label='Iterative')
 plt.xlabel('Variable Count')
 plt.ylabel('Time (seconds)')
-plt.title('Recursive vs Iterative Execution Time')
+plt.title('Recursive vs Iterative Execution Time ' + file_name)
 plt.legend()
 plt.grid(True)
 plt.show()
